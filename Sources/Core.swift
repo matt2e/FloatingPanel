@@ -977,7 +977,15 @@ class Core: NSObject, UIGestureRecognizerDelegate {
     func targetState(from currentY: CGFloat, with velocity: CGFloat) -> FloatingPanelState {
         os_log(msg, log: devLog, type: .debug, "targetState -- currentY = \(currentY), velocity = \(velocity)")
 
-        let sortedPositions = layoutAdapter.sortedAnchorStatesByCoordinate
+		
+		let sortedPositions = {
+			let states = layoutAdapter.sortedAnchorStatesByCoordinate
+			if let floatingPanelViewController = ownerVC,
+			   let filteredStates = floatingPanelViewController.delegate?.floatingPanel?(floatingPanelViewController, validateStatesThatCanBePannedTo: states) {
+				return filteredStates
+			}
+			return states
+		}()
 
         guard sortedPositions.count > 1 else {
             return state
