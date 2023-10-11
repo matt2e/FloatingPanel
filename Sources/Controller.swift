@@ -137,6 +137,9 @@ import os.log
         shouldAllowToScroll scrollView: UIScrollView,
         in state: FloatingPanelState
     ) -> Bool
+	
+	@objc(floatingPanel:validateStatesThatCanBePannedTo:)
+	optional func floatingPanel(_ fpc: FloatingPanelController, validateStatesThatCanBePannedTo: [FloatingPanelState]) -> [FloatingPanelState]
 }
 
 ///
