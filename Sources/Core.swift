@@ -865,22 +865,31 @@ class Core: NSObject, UIGestureRecognizerDelegate {
                     }
                 }
 
-                // `initialScrollOffset` must be reset to the pinning offset because the value of `scrollView.contentOffset`,
-                // for instance, is a value in [-30, 0) on a bottom positioned panel with `allowScrollPanGesture(of:condition:)`.
-                // If it's not reset, the following logic to shift the surface frame will not work and then the scroll
-                // content offset will become an unexpected value.
-                initialScrollOffset = pinningOffset
-
                 // Shift the surface frame to negate the scroll content offset at startInteraction(at:offset:)
+                // and set `initialScrollOffset` appropriately.
+                //
+                // When the scroll content is before the pinning position (e.g. contentOffset in [-30, 0)
+                // on a bottom panel with `allowScrollPanGesture(of:condition:)`), `initialScrollOffset`
+                // must be reset to the pinning offset so the frame-shifting logic works correctly.
+                //
+                // When the content has already been scrolled beyond the pinning offset (e.g. user scrolled
+                // down in a list), we preserve the current content offset to avoid resetting the user's
+                // scroll position — which can happen when a programmatic panel animation is interrupted.
                 let offsetDiff = scrollView.contentOffset - pinningOffset
                 switch layoutAdapter.position {
                 case .top, .left:
                     if value(of: offsetDiff) > 0 {
+                        initialScrollOffset = pinningOffset
                         offset = -offsetDiff
+                    } else {
+                        initialScrollOffset = scrollView.contentOffset
                     }
                 case .bottom, .right:
                     if value(of: offsetDiff) < 0 {
+                        initialScrollOffset = pinningOffset
                         offset = -offsetDiff
+                    } else {
+                        initialScrollOffset = scrollView.contentOffset
                     }
                 }
             } else {
